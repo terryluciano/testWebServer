@@ -2,13 +2,29 @@ package main
 
 import (
 	"fmt"
-	"net/http"
+	"log"
+
+	"github.com/gin-gonic/gin"
 )
 
+func Logger() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		log.Println(ctx.ClientIP())
+		ctx.Next()
+	}
+}
+
 func main() {
-	http.HandleFunc("/", func (w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Welcome")
+	r := gin.New()
+
+	r.Use(Logger())
+
+	r.GET("ping", func(c *gin.Context) {
+		fmt.Println(c.ClientIP())
+		c.JSON(200, gin.H{
+			"message": "ping",
+		})
 	})
 
-	http.ListenAndServe(":4000", nil)
+	r.Run(":4000")
 }
